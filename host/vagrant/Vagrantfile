@@ -1,5 +1,6 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+# # -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.require_version '>= 1.8.1'
 
@@ -29,34 +30,85 @@ end
 vconfig = YAML::load_file("#{dir}/oah-config.yml")
 
 
+
 $script = <<SCRIPT
-echo "create user vagrant"
-adduser --disabled-password --gecos "" vagrant
-echo 'vagrant:vagrant' | chpasswd
-ls -al /home/
-echo "add sudo privilege to user vagrant"
-cp /etc/sudoers.d/90-cloud-init-users /etc/sudoers.d/admin
-chmod +w /etc/sudoers.d/admin
-ls -al /etc/sudoers.d/
-sed -i 's/ubuntu/vagrant/g' /etc/sudoers.d/admin
-cat /etc/sudoers.d/admin
-echo "enable ssh access for user vagrant"
-mkdir /home/vagrant/.ssh
-chown vagrant:vagrant /home/vagrant/.ssh
-cat /home/ubuntu/.ssh/authorized_keys > /home/vagrant/.ssh/authorized_keys
-chown vagrant:vagrant /home/vagrant/.ssh/authorized_keys
-su - vagrant -c "cat /home/vagrant/.ssh/authorized_keys"
-chmod 600 /home/vagrant/.ssh/authorized_keys
-ls -al /home/vagrant/.ssh
-chmod 700 /home/vagrant/.ssh
-ls -al /home/vagrant
+# echo "create user vagrant"
+# adduser --disabled-password --gecos "" vagrant
+# echo 'vagrant:vagrant' | chpasswd
+# echo "add sudo privilege to user vagrant"
+# # cp /etc/sudoers.d/90-cloud-init-users /etc/sudoers.d/admin
+# # echo "value of 90-cloud"
+# # cat /etc/sudoers.d/90-cloud-init-users
+# # chmod +w /etc/sudoers.d/admin
+# # ls -al /etc/sudoers.d/
+# # sed -i 's/ubuntu/vagrant/g' /etc/sudoers.d/admin
+# # cat /etc/sudoers.d/admin
+# echo "enable ssh access for user vagrant"
+# echo "generating authorized_keys"
+# # ls /home/ubuntu/.ssh/
+# # cp /home/ubuntu/.ssh/id_rsa.pub /home/ubuntu/.ssh/authorized_keys
+# # chmod 600 /home/ubuntu/.ssh/authorized_keys
+# mkdir -p /home/vagrant/.ssh
+# # echo "listing contents of under /home/ubuntu/.ssh"
+# # ls /home/ubuntu/.ssh
+# chown vagrant:vagrant /home/vagrant/.ssh
+# # cat /home/ubuntu/.ssh/authorized_keys >> /home/vagrant/.ssh/authorized_keys
+# chown vagrant:vagrant /home/vagrant/.ssh/authorized_keys
+# su - vagrant -c "/home/vagrant/.ssh/authorized_keys"
+# chmod 600 /home/vagrant/.ssh/authorized_keys
+# # ls -al /home/vagrant/.ssh
+# chmod 700 /home/vagrant/.ssh
+# # ls -al /home/vagrant
 sudo apt update -y
 sudo apt full-upgrade -y
 sudo apt-get autoremove -y
-test -e /usr/bin/python || (sudo apt -y update && apt install -y python-minimal)
-sudo systemctl disable apt-daily.service
-sudo systemctl disable apt-daily.timer
+# # test -e /usr/bin/python || (sudo apt -y update && apt install -y python-minimal)
+# sudo systemctl disable apt-daily.service
+# sudo systemctl disable apt-daily.timer
 SCRIPT
+
+# $script = <<SCRIPT
+# echo "create user vagrant"
+# adduser --disabled-password --gecos "" vagrant
+# echo 'vagrant:vagrant' | chpasswd
+# ls -al /home/
+# echo "add sudo privilege to user vagrant"
+# cp /etc/sudoers.d/90-cloud-init-users /etc/sudoers.d/admin
+# chmod +w /etc/sudoers.d/admin
+# ls -al /etc/sudoers.d/
+# sed -i 's/ubuntu/vagrant/g' /etc/sudoers.d/admin
+# cat /etc/sudoers.d/admin
+# echo "enable ssh access for user vagrant"
+# rm -rf /home/ubuntu/.ssh
+# echo "generating new ssh key pairs"
+# ssh-keygen -t rsa -f /home/ubuntu/.ssh/
+# echo "generating authorized_keys"
+# ls /home/ubuntu/.ssh/
+# cp /home/ubuntu/.ssh/id_rsa.pub /home/ubuntu/.ssh/authorized_keys
+# chmod 600 /home/ubuntu/.ssh/authorized_keys
+# mkdir -p /home/vagrant/.ssh
+# echo "listing contents of under /home/ubuntu/.ssh"
+# ls /home/ubuntu/.ssh
+# chown vagrant:vagrant /home/vagrant/.ssh
+# cat /home/ubuntu/.ssh/authorized_keys >> /home/vagrant/.ssh/authorized_keys
+# echo "value of authorized_keys under ubuntu"
+# cat /home/ubuntu/.ssh/authorized_keys
+# echo "value of authorized_keys under vagrant"
+# cat /home/vagrant/.ssh/authorized_keys
+# chown vagrant:vagrant /home/vagrant/.ssh/authorized_keys
+# su - vagrant -c "cat /home/vagrant/.ssh/authorized_keys"
+# chmod 600 /home/vagrant/.ssh/authorized_keys
+# ls -al /home/vagrant/.ssh
+# chmod 700 /home/vagrant/.ssh
+# ls -al /home/vagrant
+# sudo apt update -y
+# sudo apt full-upgrade -y
+# sudo apt-get autoremove -y
+# test -e /usr/bin/python || (sudo apt -y update && apt install -y python-minimal)
+# sudo systemctl disable apt-daily.service
+# sudo systemctl disable apt-daily.timer
+# SCRIPT
+
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = vconfig['vagrant_hostname']
@@ -72,9 +124,36 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.network :public_network, ip: vconfig['vagrant_public_ip']
   end
 
-  config.ssh.insert_key = true
-  config.ssh.forward_agent = true
-  config.ssh.username = vconfig['vagrant_user']
+  # # Autoconfigure hosts. This will copy the private network addresses from
+  # # each VM and update hosts entries on all other machines. No further
+  # # configuration is needed.
+  # Vagrant.configure('2') do |config|
+
+  #   config.vm.define :first do |node|
+  #     node.vm.box = ""
+  #     node.vm.network :private_network, :ip => '10.20.1.2'
+  #     node.vm.provision :hosts, :sync_hosts => true
+  #   end
+
+  #   config.vm.define :second do |node|
+  #     node.vm.box = "ubuntu/bionic64"
+  #     node.vm.network :private_network, :ip => '10.20.1.3'
+  #     node.vm.provision :hosts, :sync_hosts => true
+  #   end
+  # end
+
+  # config.ssh.insert_key = true
+  # config.ssh.forward_agent = true
+  # config.ssh.username = vconfig['vagrant_user']
+
+  Vagrant.configure("2") do |config|
+    config.ssh.insert_key = true
+    config.ssh.private_key_path = "~/.ssh/id_rsa"
+    config.ssh.private_key_path = ['~/.vagrant.d/insecure_private_key', '~/.ssh/id_rsa']
+    config.ssh.forward_agent = true
+    config.ssh.username = vconfig['vagrant_user']
+  end
+  
   #config.ssh.private_key_path = ['~/.vagrant.d/insecure_private_key', '~/.ssh/id_rsa']
 
   config.vm.box = vconfig['vagrant_box']
@@ -115,14 +194,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   if which('ansible-playbook')
     config.vm.provision "ansible" do |ansible|
       ansible.playbook = "#{dir}/provisioning/oah-install.yml"
-      ansible.sudo = true
+      ansible.galaxy_role_file = "#{dir}/provisioning/oah-requirements.yml" 
+      ansible.become = true
     end
   else
     config.vm.provision "ansible_local" do |ansible|
+      # ansible.playbook = "../../provisioning/oah-install.yml"
       ansible.playbook = "../../provisioning/oah-install.yml"
       ansible.galaxy_role_file = "../../provisioning/oah-requirements.yml"
     end
   end
+
 
   # VirtualBox.
   config.vm.provider :virtualbox do |v|
@@ -131,9 +213,45 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.cpus = vconfig['vagrant_cpus']
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     v.customize ["modifyvm", :id, "--ioapic", "on"]
+    # Set the video memory to 128Mb:
+    v.customize ["modifyvm", :id, "--vram", "128"]
+    # Enable 3D acceleration:
+    v.customize ["modifyvm", :id, "--accelerate3d", "on"]
     v.gui=vconfig['oah_vm_gui']
   end
-
   config.vm.define vconfig['vagrant_machine_name'] do |d|
   end
 end
+
+
+# Box / OS
+# VAGRANT_BOX = 'ubuntu/bionic64'
+
+ 
+
+# # Memorable name for your
+# VM_NAME = 'oah-kob-vm.dev'
+
+ 
+
+# # VM User — 'vagrant' by default
+# VM_USER = 'vagrant'
+
+ 
+
+
+# Vagrant.configure(2) do |config|
+#   # Vagrant box from Hashicorp
+#   config.vm.box = VAGRANT_BOX
+
+ 
+
+#   # Actual machine name
+#   config.vm.hostname = VM_NAME
+#   # Set VM name in Virtualbox
+#   config.vm.provider "virtualbox" do |v|
+#     v.name = VM_NAME
+#     v.memory = 6144
+#   end
+# end
+ 

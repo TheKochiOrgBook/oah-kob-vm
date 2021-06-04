@@ -1,8 +1,11 @@
 ---
 - hosts: all
-  sudo: True
+  # sudo: True
+  become: True
   vars:
   - oah_command: install
+  - path_to_home: "/home/{{ vagrant_user }}"
+  - clone_path: "{{ path_to_home }}/kobman_install.sh" 
 
   vars_files:
     - ../oah-config.yml
@@ -18,9 +21,15 @@
       when: ansible_os_family == 'Debian'
   roles:
     # Essential roles.
-    - oah.oah
+    - oah.kobman
+    - oah.vscode
+    # - oah.oah
     - oah.desktop
-    - oah.atom
+
+    
+    # - oah.atom
+
+  tasks:
 
 
     # Conditionally-installed roles.
